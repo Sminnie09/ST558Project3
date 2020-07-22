@@ -22,11 +22,7 @@ shinyUI(fluidPage(
         sidebarPanel(
             
             # Input: Select the random distribution type 
-            radioButtons("dist", "Distribution type:",
-                         c("Normal" = "norm",
-                           "Uniform" = "unif",
-                           "Log-normal" = "lnorm",
-                           "Exponential" = "exp")),
+            selectizeInput("station", "City", selected = "Aotizhongxin", choices = levels(as.factor(data$station))),
             
             # br() element to introduce extra vertical spacing 
             br(),
@@ -43,7 +39,7 @@ shinyUI(fluidPage(
     mainPanel(
         tabsetPanel(type = "tabs",
                     tabPanel("Information"),
-                    tabPanel("Data"),
+                    tabPanel("Data", tableOutput("table")),
                     tabPanel("Data Exploration"),
                     tabPanel("Principal Component Analysis"),
                     tabPanel("Modeling")
