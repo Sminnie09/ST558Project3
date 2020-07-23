@@ -16,37 +16,58 @@ shinyUI(fluidPage(
     titlePanel("Final Project"),
     
     # Sidebar layout 
-    sidebarLayout(
+    sidebarLayout(position = "left",
+      sidebarPanel(
         
-        # Sidebar panel for inputs 
-        sidebarPanel(
+            conditionalPanel(condition = "input.tabs == 'Information'",
+                         #selectizeInput("station", "Select a city", selected = "Aotizhongxin", 
+                          #              choices = levels(as.factor(data$station)))
+            ),
+            conditionalPanel(condition = "input.tabs == 'Data'",
+                             selectInput("station", "Select a city", selected = "Aotizhongxin", 
+                                         choices = c("Aotizhongxin", "Changping", "Dingling")),
+                             #selectizeInput("year", "Select a year", selected = "2013", 
+                                            #choices = levels(as.factor(data$year))),
+                             #selectizeInput("month", "Select a month", selected = "1", 
+                               #             choices = levels(as.factor(data$month)))
+            ),
             
-            # Input: Select the random distribution type 
-            selectizeInput("station", "City", selected = "Aotizhongxin", choices = levels(as.factor(data$station))),
+            conditionalPanel(condition = "input.station != 'Aotizhongxin'",
+                             selectInput("year", "Select a year", selected = "2013", 
+                                            choices = levels(as.factor(data$year)))
+            ),
             
-            # br() element to introduce extra vertical spacing 
+            conditionalPanel(condition = "input.tabs == 'Data Exploration'",
+                             selectInput("station", "City", selected = "Aotizhongxin", 
+                                            choices = levels(as.factor(data$station))),
+            ),
+
+            conditionalPanel(condition = "input.tabs == 'Principal Component Analysis'",
+                             #selectizeInput("station", "City", selected = "Aotizhongxin", 
+                              #              choices = levels(as.factor(data$station)))
+            ),
+            conditionalPanel(condition = "input.tabs == 'Multiple Linear Regression'",
+                             #selectizeInput("station", "City", selected = "Aotizhongxin", 
+                              #              choices = levels(as.factor(data$station)))
+            ),
+            conditionalPanel(condition = "input.tabs == 'Random Forest'",
+                             #selectizeInput("station", "City", selected = "Aotizhongxin", 
+                                       #     choices = levels(as.factor(data$station)))
+            ),
+            
             br(),
-            
-            sliderInput("n",
-                        "Number of observations:",
-                        value = 500,
-                        min = 1,
-                        max = 1000)
-            
         ),
     
     # Tabs
     mainPanel(
-        tabsetPanel(type = "tabs",
+        tabsetPanel(id = "tabs",
                     tabPanel("Information"),
-                    tabPanel("Data", tableOutput("table")),
+                    tabPanel("Data",DT::dataTableOutput("table")),
                     tabPanel("Data Exploration"),
                     tabPanel("Principal Component Analysis"),
-                    tabPanel("Modeling")
-        )  
-            
-
-        
+                    tabPanel("Multiple Linear Regression"),
+                    tabPanel("Random Forest")
+        ))
     )
-)
 ))
+
