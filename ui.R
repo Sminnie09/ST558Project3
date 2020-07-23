@@ -1,15 +1,8 @@
-#
-# This is the user-interface definition of a Shiny web application. You can
-# run the application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 library(shiny)
 
-# Define UI for application that draws a histogram
+source("S:/ST558/Homeworks/Project 3/ST558Project3/source.R")
+
+
 shinyUI(fluidPage(
 
     # Application title
@@ -25,21 +18,21 @@ shinyUI(fluidPage(
             ),
             conditionalPanel(condition = "input.tabs == 'Data'",
                              selectInput("station", "Select a city", selected = 'Select a city', 
-                                         choices = c("Select a City","Aotizhongxin", "Changping", "Dingling")),
+                                         choices = c("Select a city","Aotizhongxin", "Changping", "Dingling")),
                              #selectizeInput("year", "Select a year", selected = "2013", 
                                             #choices = levels(as.factor(data$year))),
                              #selectizeInput("month", "Select a month", selected = "1", 
                                #             choices = levels(as.factor(data$month)))
             ),
             
-            conditionalPanel(condition = "input.station != 'Select a City'",
-                             selectInput("year", "Select a year", selected = "Select a Year", 
-                                            choices = c("Select a Year","2013", "2014"))
+            conditionalPanel(condition = "input.station != 'Select a city'",
+                             selectInput("year", "Select a year", selected = "Select a year", 
+                                            choices = c("Select a year","2013", "2014", "2015", "2016", "2017"))
             ),
             
             conditionalPanel(condition = "input.tabs == 'Data Exploration'",
-                             selectInput("station", "City", selected = "Aotizhongxin", 
-                                            choices = levels(as.factor(data$station))),
+                             #selectInput("station", "City", selected = "Aotizhongxin", 
+                               #             choices = levels(as.factor(data$station))),
             ),
 
             conditionalPanel(condition = "input.tabs == 'Principal Component Analysis'",
@@ -62,10 +55,10 @@ shinyUI(fluidPage(
     mainPanel(
         tabsetPanel(id = "tabs",
                     tabPanel("Information"),
-                    tabPanel("Data",DT::dataTableOutput("table")),
+                    tabPanel("Data",DT::dataTableOutput("table"), downloadButton("download1","Download as csv")),
                     tabPanel("Data Exploration"),
                     tabPanel("Principal Component Analysis"),
-                    tabPanel("Multiple Linear Regression"),
+                    tabPanel("Regression"),
                     tabPanel("Random Forest")
         ))
     )
