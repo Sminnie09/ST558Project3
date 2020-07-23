@@ -21,16 +21,27 @@ shinyServer(function(input, output) {
   
   #Filtered data for Data Tab
   filterData <- reactive({
-      if(is.null(input$station) == FALSE){
+      if(input$station != "Select a City"){
         newData <- loadData() %>% filter(station == input$station) 
       }
-      else if(is.null(input$station) == FALSE & is.null(input$year == FALSE)){
+      else if(input$station != "Select a City" & input$year != "Select a Year"){
         newData <- loadData() %>% filter(station == input$station) %>% filter(year == input$year)
       }
             
     
       #%>% filter(year == input$year) %>% filter(month == input$month)
   })
+  
+  #filterData <- observe({
+   #   if(input$station != "Select a City" & input$year != "Select a Year"){
+    #    newData <- loadData() %>% filter(station == input$station) %>% filter(year == input$year)
+    #}
+    
+    
+    #%>% filter(year == input$year) %>% filter(month == input$month)
+  #})
+  
+  
   
   #filterDataYear <- reactive({
    # newData <- loadData() %>% filter(station == input$station) %>% filter(year == input$year)
@@ -47,12 +58,12 @@ shinyServer(function(input, output) {
 
   
   #Data Exploration
-  output$Plot <- renderPlot({
-    df <- filterData()
+ # output$Plot <- renderPlot({
+  #  df <- filterData()
     
     
     
-  })
+  #})
     
 
 

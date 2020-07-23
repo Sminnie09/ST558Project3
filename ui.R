@@ -24,17 +24,17 @@ shinyUI(fluidPage(
                           #              choices = levels(as.factor(data$station)))
             ),
             conditionalPanel(condition = "input.tabs == 'Data'",
-                             selectInput("station", "Select a city", selected = "Aotizhongxin", 
-                                         choices = c("Aotizhongxin", "Changping", "Dingling")),
+                             selectInput("station", "Select a city", selected = 'Select a city', 
+                                         choices = c("Select a City","Aotizhongxin", "Changping", "Dingling")),
                              #selectizeInput("year", "Select a year", selected = "2013", 
                                             #choices = levels(as.factor(data$year))),
                              #selectizeInput("month", "Select a month", selected = "1", 
                                #             choices = levels(as.factor(data$month)))
             ),
             
-            conditionalPanel(condition = "input.station != 'Aotizhongxin'",
-                             selectInput("year", "Select a year", selected = "2013", 
-                                            choices = levels(as.factor(data$year)))
+            conditionalPanel(condition = "input.station != 'Select a City'",
+                             selectInput("year", "Select a year", selected = "Select a Year", 
+                                            choices = c("Select a Year","2013", "2014"))
             ),
             
             conditionalPanel(condition = "input.tabs == 'Data Exploration'",
