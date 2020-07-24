@@ -31,8 +31,8 @@ shinyUI(fluidPage(
                                          choices = c("Select a Summary", "Numerical", "Graphical"))
             ),
                       conditionalPanel(condition = "input.summaries == 'Graphical'",
-                                     selectInput("pollutant", "Select a Pollutant", selected = "PM2.5", 
-                                                 choices = c("PM2.5", "PM10","SO2","NO2","CO","O3")),
+                                     selectInput("pollutant", "Select a Pollutant", selected = "Select a Pollutant", 
+                                                 choices = c("Select a Pollutant","PM2.5", "PM10","SO2","NO2","CO","O3")),
                                      #selectInput("station", "Select a city", selected = 'Select a city', 
                                       #           choices = c("Select a city","Aotizhongxin", "Changping", "Dingling")),
                                      #selectInput("year", "Select a year", selected = "Select a year", 

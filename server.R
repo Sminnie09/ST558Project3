@@ -29,15 +29,10 @@ shinyServer(function(input, output, session) {
     if(input$summaries == 'Graphical'){
       #source("S:/ST558/Homeworks/Project 3/ST558Project3/source.R", local = TRUE)
       filterDataExplore <- loadData()
-      #print(head(filterDataExplore))
-      #print(head(filterDataExplore[input$pollutant]))
     }
-
-      #pol <- input$pollutant
-      #data <- data[pol]
-      #print(pol)
-      #print(head(data))
-    
+    #else if(input$station != 'Select a pollutant' & input$station == 'Select a city'){
+     # filterDataExplore <- loadData() %>% filter(station == input$station)
+    #}
   })
 
   #Save data in data table
@@ -64,6 +59,13 @@ shinyServer(function(input, output, session) {
       #print(input$pollutant)
       df <- as.numeric(unlist(df[input$pollutant]))
       hist(df, breaks = input$bins, xlab = input$pollutant, main = paste("Histogram of", input$pollutant))
+    }
+    if(input$plot == "Boxplot"){
+      df <- filterDataExplore()[5:10]
+      print(df)
+      #df$station <- factor(df$station)
+      boxplot(df)
+      
     }
   })
 
