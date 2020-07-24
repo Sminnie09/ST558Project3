@@ -62,8 +62,6 @@ shinyServer(function(input, output, session) {
     }
     if(input$plot == "Boxplot"){
       df <- filterDataExplore()[5:10]
-      print(df)
-      #df$station <- factor(df$station)
       boxplot(df)
       
     }
