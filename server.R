@@ -26,15 +26,12 @@ shinyServer(function(input, output, session) {
   filterDataExplore <- reactive({
     #source("S:/ST558/Homeworks/Project 3/ST558Project3/source.R", local = TRUE)
     library(tidyverse)
-    if(input$summaries == 'Graphical'){
+    if(input$Graphical == TRUE){
       #source("S:/ST558/Homeworks/Project 3/ST558Project3/source.R", local = TRUE)
       filterDataExplore <- loadData()
     }
-    #else if(input$station != 'Select a pollutant' & input$station == 'Select a city'){
-     # filterDataExplore <- loadData() %>% filter(station == input$station)
-    #}
   })
-
+  
   #Save data in data table
   output$table <- DT::renderDataTable(filterData())
 
@@ -47,6 +44,7 @@ shinyServer(function(input, output, session) {
     }
   )
   
+
 
   
   
@@ -67,11 +65,31 @@ shinyServer(function(input, output, session) {
     }
   })
 
-    
-    
-    
-  #})
-    
+  #Save histogram
+  output$downloadHist <- downloadHandler(
 
+        file = paste("Histogram", '.png', sep=''),
+      content = function(file) {
+        png(file)
+        #hist(iris$Sepal.Length)
+        #ggsave(file, plot = plot(), device = "png")
+        hist(as.numeric(unlist(filterDataExplore()[input$pollutant])), breaks = input$bins, xlab = input$pollutant, main = paste("Histogram of", input$pollutant))
+        dev.off()
+      }
+    )
+  
+  #Save boxplot
+  output$downloadBox <- downloadHandler(
+    
+    file = paste("Boxplot", '.png', sep=''),
+    content = function(file) {
+      png(file)
+      #hist(iris$Sepal.Length)
+      #ggsave(file, plot = plot(), device = "png")
+      boxplot(filterDataExplore()[5:10])
+      dev.off()
+    }
+  )
+  
 
 })
