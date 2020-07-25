@@ -43,24 +43,32 @@ shinyServer(function(input, output, session) {
 
   #Data Exploration - Graphical
   output$plot <- renderPlot({
-    df <- filterDataExplore()
-    #pol <- as.name(input$pollutant)
+
+      df <- filterDataExplore() %>% filterStationYear(input$stationPlot, input$yearPlot)
+ 
     if(input$plot == "Histogram"){
       #ggplot(df, mapping = aes(x=input$pollutant)) + geom_histogram()
       #print(input$pollutant)
-      df <- as.numeric(unlist(df[input$pollutant]))
-      hist(df, breaks = input$bins, xlab = input$pollutant, main = paste("Histogram of", input$pollutant))
+      dfPol <- as.numeric(unlist(df[input$pollutant]))
+      hist(dfPol, breaks = input$bins, xlab = input$pollutant, main = paste("Histogram of", input$stationPlot, input$pollutant, "Concentrations in", input$yearPlot))
     }
+    
     if(input$plot == "Boxplot"){
-      df <- filterDataExplore()[5:10]
-      boxplot(df)
+      df <- df[5:10]
+      #print(df)
+      par(cex.lab=1.25) # is for y-axis
+      par(cex.axis=1)
+      par(mgp=c(2,1,0)) 
+      boxplot(df, xlab("Pollutants"), ylab = expression(paste("Concentration (ug ", m^-3,")")), main = paste("Boxplot of", input$stationPlot, "Pollutant Concentrations in", input$yearPlot))
+      par(mgp = c(4,1,0))
+  
       
     }
   })
   
   #Data Exploration - Numerical
   output$numSummary <- renderPrint({
-      data <- filterDataExplore()
+      data <- filterDataExplore() %>% filterStationYear(input$stationSum, input$yearSum)
       summary(data[c(5:14, 16)])
   })
   
@@ -69,34 +77,42 @@ shinyServer(function(input, output, session) {
   
   #Data exploration table of obs
   output$view <- renderTable({
-    head(filterDataExplore(), n = input$obs)
+    dataTable <- filterDataExplore() %>% filterStationYear(input$stationSum, input$yearSum)
+    head(dataTable, n = input$obs)
   })
+  
+  #output$text <- renderText({
+   # paste0("You are currently viewing", input$obs, "of",nrow(dataTable), "records")
+  #})
 
   #Save histogram
   output$downloadHist <- downloadHandler(
 
         file = paste("Histogram", '.png', sep=''),
-      content = function(file) {
+        content = function(file) {
         png(file)
-        #hist(iris$Sepal.Length)
-        #ggsave(file, plot = plot(), device = "png")
-        hist(as.numeric(unlist(filterDataExplore()[input$pollutant])), breaks = input$bins, xlab = input$pollutant, main = paste("Histogram of", input$pollutant))
+        df <- filterDataExplore() %>% filterStationYear(input$stationPlot, input$yearPlot)
+        hist(as.numeric(unlist(df[input$pollutant])), breaks = input$bins, xlab = input$pollutant, main = paste("Histogram of", input$stationPlot, input$pollutant, "Concentrations in", input$yearPlot))
         dev.off()
       }
     )
   
   #Save boxplot
-  output$downloadBox <- downloadHandler(
+ # output$downloadBox <- downloadHandler(
     
-    file = paste("Boxplot", '.png', sep=''),
-    content = function(file) {
-      png(file)
-      #hist(iris$Sepal.Length)
-      #ggsave(file, plot = plot(), device = "png")
-      boxplot(filterDataExplore()[5:10])
-      dev.off()
-    }
-  )
+  #    file = paste("Boxplot", '.png', sep=''),
+   #   content = function(file) {
+    #    df <- filterDataExplore() %>% filterStationYear(input$stationPlot, input$yearPlot)
+     #   png(file)
+      #par(cex.lab=1.25) # is for y-axis
+      #par(cex.axis=1)
+      #par(mgp=c(2,1,0)) 
+      #boxplot(df, xlab("Pollutants"), ylab = expression(paste("Concentration (ug ", m^-3,")")), 
+       #       main = paste("Boxplot of", input$stationPlot, "Pollutant Concentrations in", input$yearPlot))
+      #par(mgp = c(4,1,0))
+      #dev.off()
+    #}
+  #)
   
   
   
@@ -120,11 +136,22 @@ shinyServer(function(input, output, session) {
     if(input$regEqu == TRUE){
       fit <- lm(y() ~ x())
       predict <- predict(fit, newdata = data.frame(x()))
-      #predict(fit, newdata = data.frame(x()))
-      plot_ly(x = x(), y = y(), type = 'scatter', mode = 'markers') %>% add_lines(x = x(), y = predict)
+      x <- list(
+        title = paste(input$xcol, "Concentration ug/m^3")
+      )
+      y <- list(
+        title = paste(input$ycol, "Concentration ug/m^3")
+      )
+      plot_ly(x = x(), y = y(), type = 'scatter', mode = 'markers', name = "Concentration") %>% add_lines(x = x(), y = predict, name = "Regression Line") %>% layout(xaxis = x, yaxis = y)
     }
     else{
-      plot<-plot_ly(x = x(), y = y(), type = 'scatter', mode = 'markers')
+      x <- list(
+        title = paste(input$xcol, "Concentration ug/m^3")
+      )
+      y <- list(
+        title = paste(input$ycol, "Concentration ug/m^3")
+      )
+      plot<-plot_ly(x = x(), y = y(), type = 'scatter', mode = 'markers') %>% layout(xaxis = x, yaxis = y)
     }
       
   )
