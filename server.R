@@ -1,6 +1,6 @@
 library(shiny)
 library(tidyverse)
-library(ggplot2)
+library(plotly)
 
 
 source("S:/ST558/Homeworks/Project 3/ST558Project3/source.R", local = environment())
@@ -27,8 +27,7 @@ shinyServer(function(input, output, session) {
       filterDataExplore <- loadData()
   })
   
-  
-  
+
   #Save data in data table
   output$table <- DT::renderDataTable(filterData())
 
@@ -65,8 +64,10 @@ shinyServer(function(input, output, session) {
       summary(data[c(5:14, 16)])
   })
   
+  #Data Exploration - Change number of obs shown
   observe({updateNumericInput(session, "obs", value = input$obs)})
   
+  #Data exploration table of obs
   output$view <- renderTable({
     head(filterDataExplore(), n = input$obs)
   })
@@ -97,5 +98,41 @@ shinyServer(function(input, output, session) {
     }
   )
   
-
+  
+  
+  #x variable for regression
+  x <- reactive({
+    df <- Dingling_reg() %>% filter(month == input$month)
+    df <- as.numeric(unlist(df[input$xcol]))
+    #print(df[input$xcol])
+  })
+  
+  #y variable for regression
+  y <- reactive({
+    df <- Dingling_reg() %>% filter(month == input$month)
+    df <- as.numeric(unlist(df[input$ycol]))
+  })
+  
+  observe({updateSliderInput(session, "month", value = input$month)})
+  
+#Regression Plot
+  output$regression <- renderPlotly(
+    if(input$regEqu == TRUE){
+      fit <- lm(y() ~ x())
+      predict <- predict(fit, newdata = data.frame(x()))
+      #predict(fit, newdata = data.frame(x()))
+      plot_ly(x = x(), y = y(), type = 'scatter', mode = 'markers') %>% add_lines(x = x(), y = predict)
+    }
+    else{
+      plot<-plot_ly(x = x(), y = y(), type = 'scatter', mode = 'markers')
+    }
+      
+  )
+  
+  #Regression equation
+  output$regressionEqu <- renderPrint({
+    fit <- lm(y() ~ x())
+  })
+  
+  
 })

@@ -31,7 +31,7 @@ shinyUI(fluidPage(
                                                   #selectInput("summaries", "Select a Summary", selected = "Select a Summary",
                                                    #           choices = c("Select a Summary", "Numerical", "Graphical")),
                                    checkboxInput("Graphical", h5("Graphical Summary"), FALSE),
-                                   checkboxInput("Numerical", h5("Numerical Summary"), FALSE),
+                                   checkboxInput("Numerical", h5("Numerical Summary"), TRUE),
                                  conditionalPanel(condition = "input.Graphical == true",
                                                   selectInput("plot", "Plot Type", selected = 'Select a plot type', 
                                                               choices = c("Select a plot type", "Boxplot", "Histogram"))
@@ -65,13 +65,17 @@ shinyUI(fluidPage(
                     tabPanel("Regression", fluid = TRUE,
                              sidebarLayout(
                                  sidebarPanel(
-                                     selectInput("x", "Explanatory Variable (x)", selected = "PM2.5",
+                                     selectInput("xcol", "Explanatory Variable (x)", selected = "PM2.5",
                                                  choices = c("PM2.5", "PM10","SO2","NO2","CO","O3","TEMP", "PRES", "DEWP", "WSPM")),
-                                     selectInput("y", "Response Variable", selected = "O3",
-                                                choices = c("O3", "SO2", "NO2", "PM2.5"))
+                                     selectInput("ycol", "Response Variable", selected = "O3",
+                                                choices = c("O3", "SO2", "NO2", "PM2.5")),
+                                     sliderInput("month", label = "Month", value = 6, min = 1,
+                                                 max = 12),
+                                     checkboxInput("regEqu", h4("Fit Regression Equation?"), FALSE)
                                      ),
                                  mainPanel(
-                                     
+                                     h3("Station: Dingling Data in 2016"),
+                                     plotlyOutput("regression")
                                  ),
                              ),
                              ),
