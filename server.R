@@ -18,7 +18,7 @@ shinyServer(function(input, output, session) {
       filterData <- loadData() %>% filter(station == input$station)
     }
     else if(input$station != 'Select a city' & input$year != 'Select a year'){
-      filterData <- loadData() %>% filter(station == input$station) %>% filter(year == input$year)
+      filterData <- loadData() %>% filterStationYear(input$station, input$year)
     }
   })
   
