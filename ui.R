@@ -30,17 +30,12 @@ shinyUI(fluidPage(
                                sidebarPanel(
                                                   #selectInput("summaries", "Select a Summary", selected = "Select a Summary",
                                                    #           choices = c("Select a Summary", "Numerical", "Graphical")),
-                                   checkboxInput("Graphical", h5("Graphical Summary"), TRUE),
+                                   checkboxInput("Graphical", h5("Graphical Summary"), FALSE),
                                    checkboxInput("Numerical", h5("Numerical Summary"), FALSE),
                                  conditionalPanel(condition = "input.Graphical == true",
-                                                  selectInput("plot", "Plot Type", selected = 'Boxplot', 
-                                                              choices = c("Boxplot", "Histogram")),
-                                                  #selectInput("station", "Select a city", selected = 'Select a city', 
-                                                  #           choices = c("Select a city","Aotizhongxin", "Changping", "Dingling")),
-                                                  #selectInput("year", "Select a year", selected = "Select a year", 
-                                                  #           choices = c("Select a year","2013", "2014", "2015", "2016", "2017")),
+                                                  selectInput("plot", "Plot Type", selected = 'Select a plot type', 
+                                                              choices = c("Select a plot type", "Boxplot", "Histogram"))
                                  ),
-                                 conditionalPanel(condition = "input.Graphical == false"),
                                  conditionalPanel(condition = "input.plot == 'Boxplot'",
                                                   downloadButton("downloadBox","Download as png")
                                                   ),
@@ -50,14 +45,36 @@ shinyUI(fluidPage(
                                                   sliderInput("bins", label = "Number of Bins", value = 10, min = 1,
                                                               max = 50),
                                                   downloadButton("downloadHist","Download as png")
-                               )
+                               ),
+                               conditionalPanel("input.Numerical == true",
+                                        numericInput("obs", "Number of Observations to view", value = 10)
+                                                )
                              ),
                              mainPanel(
-                               plotOutput("plot"))
+                                 conditionalPanel(condition = "input.Graphical == true",
+                                    plotOutput("plot")
+                                 ),
+                               conditionalPanel("input.Numerical == true",
+                                    verbatimTextOutput("numSummary"),
+                                    tableOutput("view")
+                               ),
+                             )
                              ),
                     ),
                     tabPanel("Principal Component Analysis"),
-                    tabPanel("Regression"),
+                    tabPanel("Regression", fluid = TRUE,
+                             sidebarLayout(
+                                 sidebarPanel(
+                                     selectInput("x", "Explanatory Variable (x)", selected = "PM2.5",
+                                                 choices = c("PM2.5", "PM10","SO2","NO2","CO","O3","TEMP", "PRES", "DEWP", "WSPM")),
+                                     selectInput("y", "Response Variable", selected = "O3",
+                                                choices = c("O3", "SO2", "NO2", "PM2.5"))
+                                     ),
+                                 mainPanel(
+                                     
+                                 ),
+                             ),
+                             ),
                     tabPanel("Random Forest")
         )
     )

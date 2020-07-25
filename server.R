@@ -17,20 +17,17 @@ shinyServer(function(input, output, session) {
     else if(input$station != 'Select a city' & input$year == 'Select a year'){
       filterData <- loadData() %>% filter(station == input$station)
     }
-    else if(input$year != 'Select a year' & input$year != 'Select a year'){
+    else if(input$station != 'Select a city' & input$year != 'Select a year'){
       filterData <- loadData() %>% filter(station == input$station) %>% filter(year == input$year)
     }
   })
   
-  
+  #Data for data exploration graphs
   filterDataExplore <- reactive({
-    #source("S:/ST558/Homeworks/Project 3/ST558Project3/source.R", local = TRUE)
-    library(tidyverse)
-    if(input$Graphical == TRUE){
-      #source("S:/ST558/Homeworks/Project 3/ST558Project3/source.R", local = TRUE)
       filterDataExplore <- loadData()
-    }
   })
+  
+  
   
   #Save data in data table
   output$table <- DT::renderDataTable(filterData())
@@ -45,10 +42,7 @@ shinyServer(function(input, output, session) {
   )
   
 
-
-  
-  
-  #Data Exploration
+  #Data Exploration - Graphical
   output$plot <- renderPlot({
     df <- filterDataExplore()
     #pol <- as.name(input$pollutant)
@@ -63,6 +57,18 @@ shinyServer(function(input, output, session) {
       boxplot(df)
       
     }
+  })
+  
+  #Data Exploration - Numerical
+  output$numSummary <- renderPrint({
+      data <- filterDataExplore()
+      summary(data[c(5:14, 16)])
+  })
+  
+  observe({updateNumericInput(session, "obs", value = input$obs)})
+  
+  output$view <- renderTable({
+    head(filterDataExplore(), n = input$obs)
   })
 
   #Save histogram
