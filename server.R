@@ -3,7 +3,7 @@ library(tidyverse)
 library(plotly)
 
 
-source("S:/ST558/Homeworks/Project 3/ST558Project3/source.R", local = environment())
+source("global.R")
 
 #Server function
 shinyServer(function(input, output, session) {
@@ -69,7 +69,7 @@ shinyServer(function(input, output, session) {
   #Data Exploration - Numerical
   output$numSummary <- renderPrint({
       data <- filterDataExplore() %>% filterStationYear(input$stationSum, input$yearSum)
-      summary(data[c(5:14, 16)])
+      summary(data[c(5:14, 17)])
   })
   
   #Data Exploration - Change number of obs shown
@@ -183,5 +183,13 @@ shinyServer(function(input, output, session) {
     }
       
   })
+  
+  
+  #### Random Forest Model
+  #varsRF <- renderUI({
+   # if(input$stationRF != 'Select a city' & input$yearRF != 'Select a year'){
+      
+    #}
+  #})
   
 })

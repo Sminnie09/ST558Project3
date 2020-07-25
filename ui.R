@@ -1,7 +1,7 @@
 library(shiny)
 library(plotly)
 
-
+source("global.R")
 
 shinyUI(fluidPage(
 
@@ -69,41 +69,6 @@ shinyUI(fluidPage(
                                  )
                                )
                             ),
-                            # sidebarLayout(
-                             #  sidebarPanel(
-                                                  #selectInput("summaries", "Select a Summary", selected = "Select a Summary",
-                                                   #           choices = c("Select a Summary", "Numerical", "Graphical")),
-                                   #checkboxInput("Graphical", h5("Graphical Summary"), FALSE),
-                                   #checkboxInput("Numerical", h5("Numerical Summary"), TRUE),
-                              #   conditionalPanel(condition = "input.Graphical == true",
-                                #                  selectInput("plot", "Plot Type", selected = 'Select a plot type', 
-                                 #                             choices = c("Select a plot type", "Boxplot", "Histogram"))
-                               #  ),
-                                 #conditionalPanel(condition = "input.plot == 'Boxplot'",
-                                  #                downloadButton("downloadBox","Download as png")
-                                   #               ),
-                                 #conditionalPanel(condition = "input.plot == 'Histogram'",
-                                  #                selectInput("pollutant", "Select a Pollutant", selected = "PM2.5", 
-                                   #                           choices = c("PM2.5", "PM10","SO2","NO2","CO","O3")),
-                                    #              sliderInput("bins", label = "Number of Bins", value = 10, min = 1,
-                                     #                         max = 50),
-                                      #            downloadButton("downloadHist","Download as png")
-                               #),
-                               #conditionalPanel("input.Numerical == true",
-                                #        numericInput("obs", "Number of Observations to view", value = 10)
-                                 #               )
-                             #),
-                             #mainPanel(
-                              #   conditionalPanel(condition = "input.Graphical == true",
-                               #     plotOutput("plot")
-                                # ),
-                            #   conditionalPanel("input.Numerical == true",
-                             #       verbatimTextOutput("numSummary"),
-                              #      tableOutput("view")
-                               #),
-                             #)
-                             #),
-                    #),
                     tabPanel("Principal Component Analysis"),
                     tabPanel("Regression", fluid = TRUE,
                              sidebarLayout(
@@ -126,13 +91,33 @@ shinyUI(fluidPage(
 
                                                        verbatimTextOutput("regressionEqu"),
                                                        tableOutput("regTable")
-                                                     
-                                      
-                                     
                                  ),
                              ),
                              ),
-                    tabPanel("Random Forest")
+                    tabPanel("Random Forest Model", fluid = TRUE,
+                             sidebarLayout(
+                               sidebarPanel(
+                                 h3("Choose Parameters"),
+                                 selectInput("stationRF", "Select a city", selected = 'Aotizhongxin', 
+                                             choices = c("Aotizhongxin", "Changping", "Dingling")),
+                                 selectInput("yearRF", "Select a year", selected = "2013", 
+                                             choices = c("2013", "2014", "2015", "2016", "2017")),
+                                 #uiOutput("varsRF")
+                                 selectInput("vars1", "Select one outcome variable:", choices = c("PM2.5", "PM10","SO2","NO2","CO","O3","TEMP", "PRES", "DEWP", "WSPM"), selected = NULL, multiple = FALSE),
+                                 radioButtons("explvars", "Choose explanatory variables:",
+                                              list("All" = "all", "Select explanatory variables" = "select"), selected = "all"),
+                                    conditionalPanel(condition = "input.explvars == 'select'",
+                                            selectInput("vars2", "Select the explanatory variables:", choices = c("PM2.5", "PM10","SO2","NO2","CO","O3","TEMP", "PRES", "DEWP", "WSPM"), selected = NULL, multiple=TRUE)          
+                                                     )
+
+
+                                 
+                               ),
+                               mainPanel(
+                                 
+                               )
+                             )
+                             )
                 
         )
     )
