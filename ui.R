@@ -14,12 +14,11 @@ shinyUI(fluidPage(
                     tabPanel("Data", fluid = TRUE,
                              sidebarLayout(
                                sidebarPanel(
-                                                  selectInput("station", "Select a city", selected = 'Select a city', 
+                                    h3("View Datasets"),
+                                    selectInput("station", "Select a city", selected = 'Select a city', 
                                                               choices = c("Select a city","Aotizhongxin", "Changping", "Dingling")),
-                                 #conditionalPanel(condition = "input.station != 'Select a city'",
                                                   selectInput("year", "Select a year", selected = "Select a year", 
                                                               choices = c("Select a year","2013", "2014", "2015", "2016", "2017"))
-                                 #)
                                ),
                                mainPanel(
                                  DT::dataTableOutput("table"), downloadButton("download1","Download as csv"))
@@ -29,6 +28,7 @@ shinyUI(fluidPage(
                                tabPanel("Graphical Summaries", fluid = TRUE,
                                        sidebarLayout(
                                          sidebarPanel(
+                                           h3("Graphical Summaries"),
                                            selectInput("stationPlot", "Select a city", selected = 'Aotizhongxin', 
                                                        choices = c("Aotizhongxin", "Changping", "Dingling")),
                                            selectInput("yearPlot", "Select a year", selected = "2013", 
@@ -54,6 +54,7 @@ shinyUI(fluidPage(
                                tabPanel("Numerical Summaries", fluid = TRUE,
                                  sidebarLayout(
                                    sidebarPanel(
+                                     h3("Numerical Summaries"),
                                      selectInput("stationSum", "Select a city", selected = 'Aotizhongxin', 
                                                  choices = c("Aotizhongxin", "Changping", "Dingling")),
                                      selectInput("yearSum", "Select a year", selected = "2013", 
@@ -107,6 +108,11 @@ shinyUI(fluidPage(
                     tabPanel("Regression", fluid = TRUE,
                              sidebarLayout(
                                  sidebarPanel(
+                                    h3("Regression Analysis"),
+                                    selectInput("stationReg", "Select a city", selected = 'Aotizhongxin', 
+                                               choices = c("Aotizhongxin", "Changping", "Dingling")),
+                                    selectInput("yearReg", "Select a year", selected = "2013", 
+                                                choices = c("2013", "2014", "2015", "2016", "2017")),
                                      selectInput("xcol", "Explanatory Variable (x)", selected = "PM2.5",
                                                  choices = c("PM2.5", "PM10","SO2","NO2","CO","O3","TEMP", "PRES", "DEWP", "WSPM")),
                                      selectInput("ycol", "Response Variable", selected = "O3",
@@ -116,8 +122,13 @@ shinyUI(fluidPage(
                                      checkboxInput("regEqu", h4("Fit Regression Equation?"), FALSE)
                                      ),
                                  mainPanel(
-                                     h3("Station: Dingling Data in 2016"),
-                                     plotlyOutput("regression")
+                                     plotlyOutput("regression"),
+
+                                                       verbatimTextOutput("regressionEqu"),
+                                                       tableOutput("regTable")
+                                                     
+                                      
+                                     
                                  ),
                              ),
                              ),

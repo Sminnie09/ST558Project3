@@ -118,17 +118,19 @@ shinyServer(function(input, output, session) {
   
   #x variable for regression
   x <- reactive({
-    df <- Dingling_reg() %>% filter(month == input$month)
+    #df <- Dingling_reg() %>% filter(month == input$month)
+    df <- filterDataExplore() %>% filterStationYear(input$stationReg, input$yearReg) %>% filter(month == input$month)
     df <- as.numeric(unlist(df[input$xcol]))
-    #print(df[input$xcol])
+    
   })
   
   #y variable for regression
   y <- reactive({
-    df <- Dingling_reg() %>% filter(month == input$month)
+    df <- filterDataExplore() %>% filterStationYear(input$stationReg, input$yearReg) %>% filter(month == input$month)
     df <- as.numeric(unlist(df[input$ycol]))
   })
   
+  #Change month in slider
   observe({updateSliderInput(session, "month", value = input$month)})
   
 #Regression Plot
@@ -142,7 +144,10 @@ shinyServer(function(input, output, session) {
       y <- list(
         title = paste(input$ycol, "Concentration ug/m^3")
       )
-      plot_ly(x = x(), y = y(), type = 'scatter', mode = 'markers', name = "Concentration") %>% add_lines(x = x(), y = predict, name = "Regression Line") %>% layout(xaxis = x, yaxis = y)
+      plot_ly(x = x(), y = y(), type = 'scatter', mode = 'markers', name = "Concentration") %>% add_lines(x = x(), y = predict, name = "Regression Line") %>% layout(xaxis = x, yaxis = y, 
+                                                                                                                                                                     title = paste("Simple Linear Regression:", 
+                                                                                                                                                                                   "X =", input$xcol,
+                                                                                                                                                                                   " , Y = ", input$ycol))
     }
     else{
       x <- list(
@@ -151,15 +156,32 @@ shinyServer(function(input, output, session) {
       y <- list(
         title = paste(input$ycol, "Concentration ug/m^3")
       )
-      plot<-plot_ly(x = x(), y = y(), type = 'scatter', mode = 'markers') %>% layout(xaxis = x, yaxis = y)
+      plot<-plot_ly(x = x(), y = y(), type = 'scatter', mode = 'markers') %>% layout(xaxis = x, yaxis = y, title = paste("Pollutant Concentrations in", input$stationReg, "in", input$yearReg))
     }
       
   )
   
-  #Regression equation
-  output$regressionEqu <- renderPrint({
-    fit <- lm(y() ~ x())
+
+  #Observe checkbox for regression equation
+  observeEvent(input$regEqu,{
   })
   
+  #Regression equation
+  output$regressionEqu <- renderPrint({
+    
+    if(input$regEqu == TRUE){
+    fit <- lm(y() ~ x())
+    fit
+    }
+  })
+  
+  output$regTable <- renderTable({
+    
+    if(input$regEqu == TRUE){
+      data <- data.frame(x = x(), yPredict = predict(lm(y() ~ x()), newdata = data.frame(x())))
+      head(data, n = 20)
+    }
+      
+  })
   
 })
