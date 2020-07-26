@@ -1,6 +1,5 @@
 library(tidyverse)
 
-#setwd("S:/ST558/Homeworks/Project 3/ST558Project3")
 
 #Load all data
 loadData <- function(){
@@ -12,6 +11,10 @@ loadData <- function(){
   } 
   return(table[c(2:14,17:18)])
 }
+
+# pollutant and vars vector
+pols <- names(loadData()[5:10])
+vars <- names(loadData()[5:14])
 
 
 #Load one file for modeling

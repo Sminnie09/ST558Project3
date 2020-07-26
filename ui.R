@@ -4,9 +4,6 @@ library(plotly)
 source("global.R")
 
 shinyUI(fluidPage(
-
-    # Application title
-    #titlePanel("Final Project"),
     
     # Tabs
         navbarPage("ST558 Final Project",
@@ -15,10 +12,10 @@ shinyUI(fluidPage(
                              sidebarLayout(
                                sidebarPanel(
                                     h3("View Datasets"),
-                                    selectInput("station", "Select a city", selected = 'Select a city', 
-                                                              choices = c("Select a city","Aotizhongxin", "Changping", "Dingling")),
-                                                  selectInput("year", "Select a year", selected = "Select a year", 
-                                                              choices = c("Select a year","2013", "2014", "2015", "2016", "2017"))
+                                    selectInput("station", "Select a city", selected = 'Aotizhongxin', 
+                                                              choices = levels(as.factor(loadData()$station))),
+                                                  selectInput("year", "Select a year", selected = "2013", 
+                                                              choices = levels(as.factor(loadData()$year)))
                                ),
                                mainPanel(
                                  DT::dataTableOutput("table"), downloadButton("download1","Download as csv"))
@@ -30,9 +27,9 @@ shinyUI(fluidPage(
                                          sidebarPanel(
                                            h3("Graphical Summaries"),
                                            selectInput("stationPlot", "Select a city", selected = 'Aotizhongxin', 
-                                                       choices = c("Aotizhongxin", "Changping", "Dingling")),
+                                                       choices = levels(as.factor(loadData()$station))),
                                            selectInput("yearPlot", "Select a year", selected = "2013", 
-                                                       choices = c("2013", "2014", "2015", "2016", "2017")),
+                                                       choices =levels(as.factor(loadData()$year))),
                                            selectInput("plot", "Plot Type", selected = 'Boxplot', 
                                                        choices = c("Boxplot", "Histogram")),
                                            conditionalPanel(condition = "input.plot == 'Boxplot'",
@@ -40,7 +37,7 @@ shinyUI(fluidPage(
                                            ),
                                            conditionalPanel(condition = "input.plot == 'Histogram'",
                                                             selectInput("pollutant", "Select a Pollutant", selected = "PM2.5", 
-                                                                        choices = c("PM2.5", "PM10","SO2","NO2","CO","O3")),
+                                                                        choices = pols),
                                                             sliderInput("bins", label = "Number of Bins", value = 10, min = 1,
                                                                         max = 50),
                                                             downloadButton("downloadHist","Download as png")
@@ -56,9 +53,9 @@ shinyUI(fluidPage(
                                    sidebarPanel(
                                      h3("Numerical Summaries"),
                                      selectInput("stationSum", "Select a city", selected = 'Aotizhongxin', 
-                                                 choices = c("Aotizhongxin", "Changping", "Dingling")),
+                                                 choices = levels(as.factor(loadData()$station))),
                                      selectInput("yearSum", "Select a year", selected = "2013", 
-                                                 choices = c("2013", "2014", "2015", "2016", "2017")),
+                                                 choices = levels(as.factor(loadData()$year))),
                                      numericInput("obs", "Number of Observations to view", value = 10),
                                      textOutput("text")
                                    ),
@@ -69,55 +66,60 @@ shinyUI(fluidPage(
                                  )
                                )
                             ),
-                    tabPanel("Principal Component Analysis"),
-                    tabPanel("Regression", fluid = TRUE,
-                             sidebarLayout(
-                                 sidebarPanel(
-                                    h3("Regression Analysis"),
-                                    selectInput("stationReg", "Select a city", selected = 'Aotizhongxin', 
-                                               choices = c("Aotizhongxin", "Changping", "Dingling")),
-                                    selectInput("yearReg", "Select a year", selected = "2013", 
-                                                choices = c("2013", "2014", "2015", "2016", "2017")),
-                                     selectInput("xcol", "Explanatory Variable (x)", selected = "PM2.5",
-                                                 choices = c("PM2.5", "PM10","SO2","NO2","CO","O3","TEMP", "PRES", "DEWP", "WSPM")),
-                                     selectInput("ycol", "Response Variable", selected = "O3",
-                                                choices = c("O3", "SO2", "NO2", "PM2.5")),
-                                     sliderInput("month", label = "Month", value = 6, min = 1,
-                                                 max = 12),
-                                     checkboxInput("regEqu", h4("Fit Regression Equation?"), FALSE)
-                                     ),
-                                 mainPanel(
-                                     plotlyOutput("regression"),
+                              tabPanel("Principal Component Analysis"),
+                   navbarMenu("Supervised Learning Models", 
+                              tabPanel("Regression", fluid = TRUE,
+                                       sidebarLayout(
+                                         sidebarPanel(
+                                           h3("Regression Analysis"),
+                                           selectInput("stationReg", "Select a city", selected = 'Aotizhongxin', 
+                                                       choices = levels(as.factor(loadData()$station))),
+                                           selectInput("yearReg", "Select a year", selected = "2013", 
+                                                       choices = levels(as.factor(loadData()$year))),
+                                           selectInput("xcol", "Predictor Variable (x)", selected = "PM2.5",
+                                                       choices = vars),
+                                           selectInput("ycol", "Response Variable", selected = "O3",
+                                                       choices = pols),
+                                           sliderInput("month", label = "Month", value = 6, min = 1,
+                                                       max = 12),
+                                           checkboxInput("regEqu", h4("Fit Regression Equation?"), FALSE)
+                                         ),
+                                         mainPanel(
+                                           plotlyOutput("regression"),
+                                           
+                                           verbatimTextOutput("regressionEqu"),
+                                           tableOutput("regTable")
+                                         ),
+                                       ),
+                              ),
+                              tabPanel("Random Forest Model", fluid = TRUE,
+                                       sidebarLayout(
+                                         sidebarPanel(
+                                           h3("Choose a Dataset"),
+                                           selectInput("stationRF", "Select a city", selected = 'Aotizhongxin', 
+                                                       choices = levels(as.factor(loadData()$station))),
+                                           selectInput("yearRF", "Select a year", selected = "2013", 
+                                                       choices = levels(as.factor(loadData()$year))),
+                                           h3("Choose Model Parameters"),
+                                           selectInput("vars1", "Select one outcome variable:", choices = pols, selected = vars[1], multiple = FALSE),
+                                           radioButtons("predvars", "Choose predictor variables:",
+                                                        list("All" = "all", "Select predictor variables" = "select"), selected = NULL),
+                                           conditionalPanel(condition = "input.predvars == 'select'",
+                                                            selectInput("vars2", "Select the predictor variables:", choices = vars, selected = NULL, multiple=TRUE)          
+                                           ),
+                                           actionButton('rfModel', 'Run Model')
+                                          
+                                           
+                                           
+                                           
+                                         ),
+                                         mainPanel(
+                                           verbatimTextOutput("rfOutput")
+                                         )
+                                       )
+                              )
+                   )
 
-                                                       verbatimTextOutput("regressionEqu"),
-                                                       tableOutput("regTable")
-                                 ),
-                             ),
-                             ),
-                    tabPanel("Random Forest Model", fluid = TRUE,
-                             sidebarLayout(
-                               sidebarPanel(
-                                 h3("Choose Parameters"),
-                                 selectInput("stationRF", "Select a city", selected = 'Aotizhongxin', 
-                                             choices = c("Aotizhongxin", "Changping", "Dingling")),
-                                 selectInput("yearRF", "Select a year", selected = "2013", 
-                                             choices = c("2013", "2014", "2015", "2016", "2017")),
-                                 #uiOutput("varsRF")
-                                 selectInput("vars1", "Select one outcome variable:", choices = c("PM2.5", "PM10","SO2","NO2","CO","O3","TEMP", "PRES", "DEWP", "WSPM"), selected = NULL, multiple = FALSE),
-                                 radioButtons("explvars", "Choose explanatory variables:",
-                                              list("All" = "all", "Select explanatory variables" = "select"), selected = "all"),
-                                    conditionalPanel(condition = "input.explvars == 'select'",
-                                            selectInput("vars2", "Select the explanatory variables:", choices = c("PM2.5", "PM10","SO2","NO2","CO","O3","TEMP", "PRES", "DEWP", "WSPM"), selected = NULL, multiple=TRUE)          
-                                                     )
-
-
-                                 
-                               ),
-                               mainPanel(
-                                 
-                               )
-                             )
-                             )
                 
         )
     )

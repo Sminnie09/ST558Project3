@@ -1,6 +1,8 @@
 library(shiny)
 library(tidyverse)
 library(plotly)
+library(caret)
+library(e1071)
 
 
 source("global.R")
@@ -69,7 +71,7 @@ shinyServer(function(input, output, session) {
   #Data Exploration - Numerical
   output$numSummary <- renderPrint({
       data <- filterDataExplore() %>% filterStationYear(input$stationSum, input$yearSum)
-      summary(data[c(5:14, 17)])
+      summary(data[c(5:14)])
   })
   
   #Data Exploration - Change number of obs shown
@@ -186,10 +188,41 @@ shinyServer(function(input, output, session) {
   
   
   #### Random Forest Model
-  #varsRF <- renderUI({
-   # if(input$stationRF != 'Select a city' & input$yearRF != 'Select a year'){
+  
+  RandForest <- reactive({
+    
+      set.seed(123)
+      df <- filterDataExplore() %>% filterStationYear(input$stationRF, input$yearRF) %>% na.omit()
+      df$class <- ifelse(df[input$vars1] <= 200, "low", "high")
+      df$class <- factor(df$class)
+      df <- df[c(5:14,16)]
+      train <- sample(1:nrow(df), size = nrow(df)*0.8)
+      test <- dplyr::setdiff(1:nrow(df), train)
+      dfTrain <- df[train, ]
       
-    #}
-  #})
+      dfTest <- df[test, ]
+    
+    
+    if(input$predvars == "all" & input$rfModel == 1){
+      
+      #Create train/test datsets
+      print(input$rfModel)
+      print(data.frame(dfTrain))
+    
+    #repeated cross validation
+    set.seed(123)
+    trCtrl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+    #print(trCtrl)
+    #rfFit <- train(class~., data = dfTrain, method = "rf",
+     #              trControl = trCtrl, preProcess = c("center", "scale"))
+    #print(rfFit)
+    }
+  })
+  
+  #Print Random Forest output
+  output$rfOutput <- renderPrint({
+    input$rfModel
+        RandForest()
+  })
   
 })
