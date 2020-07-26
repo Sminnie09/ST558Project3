@@ -1,6 +1,7 @@
 library(shiny)
 library(tidyverse)
 library(plotly)
+library(randomForest)
 library(caret)
 library(e1071)
 
@@ -189,40 +190,104 @@ shinyServer(function(input, output, session) {
   
   #### Random Forest Model
   
+
   RandForest <- reactive({
     
       set.seed(123)
       df <- filterDataExplore() %>% filterStationYear(input$stationRF, input$yearRF) %>% na.omit()
-      df$class <- ifelse(df[input$vars1] <= 200, "low", "high")
-      df$class <- factor(df$class)
-      df <- df[c(5:14,16)]
+      #df$class <- ifelse(df[input$vars1] <= 400, "low", "high")
+      #df$class <- factor(df$class)
+      df <- df[c(5:14)]
+      #df <- dplyr::select(df, -input$vars1)
       train <- sample(1:nrow(df), size = nrow(df)*0.8)
       test <- dplyr::setdiff(1:nrow(df), train)
       dfTrain <- df[train, ]
-      
       dfTest <- df[test, ]
     
-    
-    if(input$predvars == "all" & input$rfModel == 1){
+    if(input$predvars == "all"){
+      #Status Bar
+      progress <- Progress$new(session, min=1, max=15)
+      on.exit(progress$close())
+      
+      progress$set(message = 'Calculation in progress',
+                   detail = 'This may take a while...')
+      
+      for (i in 1:15) {
+        progress$set(value = i)
+        Sys.sleep(0.5)
+      }
       
       #Create train/test datsets
-      print(input$rfModel)
-      print(data.frame(dfTrain))
+      #repeated cross validation
+      set.seed(123)
+      trCtrl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+      #print(trCtrl)
+      rfFit <- train(as.formula(paste(input$vars1,"~.")), data = dfTrain, method = "rf",
+                     trControl = trCtrl, preProcess = c("center", "scale"), imp = TRUE)
+    }else{
+      
+      if(is.null(input$vars2) == TRUE
+        #Status Bar
+        progress <- Progress$new(session, min=1, max=15)
+        on.exit(progress$close())
+        
+        progress$set(message = 'Calculation in progress',
+                     detail = 'This may take a while...')
+        
+        for (i in 1:15) {
+          progress$set(value = i)
+          Sys.sleep(0.5)
+        }
+        
+        #Create train/test datsets
+        #repeated cross validation
+        set.seed(123)
+        trCtrl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+        #print(trCtrl)
+        rfFit <- train(as.formula(paste(input$vars1,"~.")), data = dfTrain, method = "rf",
+                       trControl = trCtrl, preProcess = c("center", "scale"), imp = TRUE)
+      }
+      #rf output
+      impt <- varImp(rfFit, scale = FALSE)
+      list(result = rfFit, importance = impt)
+  })
+
+  
+  
+  #random forest button
+  rfModelEvent <- eventReactive(input$rfButton,{
+    RandForest()
     
-    #repeated cross validation
-    set.seed(123)
-    trCtrl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
-    #print(trCtrl)
-    #rfFit <- train(class~., data = dfTrain, method = "rf",
-     #              trControl = trCtrl, preProcess = c("center", "scale"))
-    #print(rfFit)
-    }
   })
   
   #Print Random Forest output
   output$rfOutput <- renderPrint({
-    input$rfModel
-        RandForest()
+    rfModelEvent()
+    
   })
+  
+  
+  output$varImpPlot <- renderPlot({
+    if (input$predvars == "all") {
+      
+      rfImp <- rfModelEvent()$importance
+      #print(rfFit)
+      plot(rfImp)
+    }
+
+  })
+  
+  
+  
+
+  
+  
+  #update action button for random forest model
+  
+
+  
+  
+
+    
   
 })

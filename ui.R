@@ -101,20 +101,21 @@ shinyUI(fluidPage(
                                            selectInput("yearRF", "Select a year", selected = "2013", 
                                                        choices = levels(as.factor(loadData()$year))),
                                            h3("Choose Model Parameters"),
-                                           selectInput("vars1", "Select one outcome variable:", choices = pols, selected = vars[1], multiple = FALSE),
+                                           selectInput("vars1", "Select one outcome variable:", choices = c("PM2.5", "PM10"), selected = "PM2.5", multiple = FALSE),
                                            radioButtons("predvars", "Choose predictor variables:",
                                                         list("All" = "all", "Select predictor variables" = "select"), selected = NULL),
                                            conditionalPanel(condition = "input.predvars == 'select'",
                                                             selectInput("vars2", "Select the predictor variables:", choices = vars, selected = NULL, multiple=TRUE)          
                                            ),
-                                           actionButton('rfModel', 'Run Model')
+                                           actionButton('rfButton', label = 'Run Model')
                                           
                                            
                                            
                                            
                                          ),
                                          mainPanel(
-                                           verbatimTextOutput("rfOutput")
+                                           verbatimTextOutput("rfOutput"),
+                                           plotOutput("varImpPlot")
                                          )
                                        )
                               )
