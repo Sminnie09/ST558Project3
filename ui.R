@@ -7,7 +7,44 @@ shinyUI(fluidPage(
     
     # Tabs
         navbarPage("ST558 Final Project",
-                    tabPanel("Information"),
+                    tabPanel("Information",
+                             sidebarLayout(
+                                 sidebarPanel(
+                                     strong(h1("Outline of App Abilities", align = "center")),
+                                     h3("Data"),
+                                     p("- View the full dataset and subsets of the data. Save data
+                                       as csv file."),
+                                     h3("Data Exploration"),
+                                     p("- Explore subsets of the dataset and save as png file"),
+                                     h4("Graphical Summaries"),
+                                     p(" - Boxplots of each pollutant. Histograms of each pollutant with the
+                                       ability to change the number of bins and download image as png."),
+                                     h4("Numerical Summaries"),
+                                     p(" - Five number summary for pollutant and meteorological variables
+                                       in the dataset. View subsets of data and ability to change the number of observations
+                                       shown in the data table."),
+                                     h3("Principal Component Analysis"),
+                                     p(" - Select a subset of data and click Run Analysis button. The results of the analysis
+                                     for all pollutants and meteorological variables will output along with a variance plot
+                                     and biplot. Ability to select orthogonal principal components to change the biplot for  
+                                     the analysis run."),
+                                     h3("Supervised Learning Models"),
+                                     p(" - Explore the response of Pollutant and meteorological variables as predictors."),
+                                     h4("Regression Model"),
+                                     p(" - Select a subset of data, a predictor variable, and a response variable to view scatter
+                                       plot. Check the check box to view summary of simple linear regression model. View the
+                                       test dataset and response prediction. The following equation was used to create the model:"),
+                                     uiOutput("SLR"),
+                                     h4("Random Forest Model")
+                                     
+                                 ),
+                                 mainPanel(
+                                     h1("Data Information", align = "center"),
+                                     
+                                     
+                                 )
+                             )
+                    ),
                     tabPanel("Data", fluid = TRUE,
                              sidebarLayout(
                                sidebarPanel(
@@ -59,12 +96,12 @@ shinyUI(fluidPage(
                                                  choices = levels(as.factor(loadData()$station))),
                                      selectInput("yearSum", "Select a year", selected = "2013", 
                                                  choices = levels(as.factor(loadData()$year))),
-                                     numericInput("obs", "Number of Observations to view", value = 10),
-                                     textOutput("text")
+                                     numericInput("obs", "Number of Observations to view", value = 10)
                                    ),
                                    mainPanel(
                                      verbatimTextOutput("numSummary"),
-                                      tableOutput("view")
+                                      tableOutput("view"),
+                                     tableOutput("sumTable")
                                    )
                                  )
                                )
@@ -82,7 +119,7 @@ shinyUI(fluidPage(
                                                h3("Select Principal Components"),
                                                selectInput("xPC", "Select PC for x-axis", choices = seq(1:10), selected = 1),
                                                selectInput("yPC", "Select PC for yaxis", choices = seq(1:10), selected = 2),
-                                               actionButton('PCbutton', label = 'Run Model'),
+                                               actionButton('PCbutton', label = 'Run Analysis'),
                                                plotOutput("biplot")
                                            ),
                                            mainPanel(
@@ -93,17 +130,17 @@ shinyUI(fluidPage(
                                        )
                             ),
                    navbarMenu("Supervised Learning Models", 
-                              tabPanel("Regression", fluid = TRUE,
+                              tabPanel("Regression Model", fluid = TRUE,
                                        sidebarLayout(
                                          sidebarPanel(
-                                           h3("Regression Analysis"),
+                                           h3("Regression Model"),
                                            selectInput("stationReg", "Select a city", selected = 'Aotizhongxin', 
                                                        choices = levels(as.factor(loadData()$station))),
                                            selectInput("yearReg", "Select a year", selected = "2013", 
                                                        choices = levels(as.factor(loadData()$year))),
                                            selectInput("xcol", "Predictor Variable (x)", selected = "PM2.5",
                                                        choices = pols),
-                                           selectInput("ycol", "Response Variable", selected = "O3",
+                                           selectInput("ycol", "Response Variable", selected = "PM10",
                                                        choices = pols),
                                            sliderInput("monthReg", label = "Month", value = 6, min = 1,
                                                        max = 12),

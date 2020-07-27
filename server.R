@@ -66,11 +66,13 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  
   #Data Exploration - Numerical
   output$numSummary <- renderPrint({
       data <- filterDataExplore() %>% filterStationYear(input$stationSum, input$yearSum)
       summary(data[c(5:14)])
   })
+  
   
   #Data Exploration - Change number of obs shown
   observe({updateNumericInput(session, "obs", value = input$obs)})
@@ -81,9 +83,6 @@ shinyServer(function(input, output, session) {
     head(dataTable, n = input$obs)
   })
   
-  #output$text <- renderText({
-   # paste0("You are currently viewing", input$obs, "of",nrow(dataTable), "records")
-  #})
 
   #Save histogram
   output$downloadHist <- downloadHandler(
@@ -97,25 +96,8 @@ shinyServer(function(input, output, session) {
       }
     )
   
-  #Save boxplot
- # output$downloadBox <- downloadHandler(
-    
-  #    file = paste("Boxplot", '.png', sep=''),
-   #   content = function(file) {
-    #    df <- filterDataExplore() %>% filterStationYear(input$stationPlot, input$yearPlot)
-     #   png(file)
-      #par(cex.lab=1.25) # is for y-axis
-      #par(cex.axis=1)
-      #par(mgp=c(2,1,0)) 
-      #boxplot(df, xlab("Pollutants"), ylab = expression(paste("Concentration (ug ", m^-3,")")), 
-       #       main = paste("Boxplot of", input$stationPlot, "Pollutant Concentrations in", input$yearPlot))
-      #par(mgp = c(4,1,0))
-      #dev.off()
-    #}
-  #)
-  
-  
-  
+#### Regression  
+
   #x variable for regression
   x <- reactive({
     #df <- Dingling_reg() %>% filter(month == input$month)
@@ -193,6 +175,13 @@ shinyServer(function(input, output, session) {
     }
       
   )
+  
+  #Regression equation using MathJax() on Information page
+  output$SLR <- renderUI({
+    withMathJax(
+      '$$Y_i = \\beta_0 + \\beta_1 x_i$$'
+    )
+  })
   
 
   #Observe checkbox for regression equation
