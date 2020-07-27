@@ -110,7 +110,7 @@ shinyUI(fluidPage(
                                            checkboxInput("regEqu", h4("Fit Regression Equation?"), FALSE)
                                          ),
                                          mainPanel(
-                                           plotlyOutput("regression"),
+                                           plotlyOutput("regressionPlot"),
                                            
                                            verbatimTextOutput("regressionEqu"),
                                            DT::dataTableOutput("regTable")

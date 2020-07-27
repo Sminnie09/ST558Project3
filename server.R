@@ -119,35 +119,68 @@ shinyServer(function(input, output, session) {
   #x variable for regression
   x <- reactive({
     #df <- Dingling_reg() %>% filter(month == input$month)
-    df <- filterDataExplore() %>% filterStationYear(input$stationReg, input$yearReg) %>% filter(month == input$monthReg)
+    df <- filterDataExplore() %>% filterStationYear(input$stationReg, input$yearReg) %>% filter(month == input$monthReg) %>% na.omit()
     df <- as.numeric(unlist(df[input$xcol]))
     
   })
   
   #y variable for regression
   y <- reactive({
-    df <- filterDataExplore() %>% filterStationYear(input$stationReg, input$yearReg) %>% filter(month == input$monthReg)
+    df <- filterDataExplore() %>% filterStationYear(input$stationReg, input$yearReg) %>% filter(month == input$monthReg) %>% na.omit()
     df <- as.numeric(unlist(df[input$ycol]))
   })
   
   #Change month in slider
   observe({updateSliderInput(session, "month", value = input$monthReg)})
   
-#Regression Plot
-  output$regression <- renderPlotly(
+  
+  #Regression Calculation with repeated cross validation
+  regression <- reactive({
+    
     if(input$regEqu == TRUE){
-      fit <- lm(y() ~ x())
-      predict <- predict(fit, newdata = data.frame(x()))
+    set.seed(123)
+    df <- data.frame(x(), y())
+    colnames(df) <- c(input$xcol, input$ycol)
+    #df <- dplyr::select(df, -input$vars1)
+    train <- sample(1:nrow(df), size = nrow(df)*0.8)
+    test <- dplyr::setdiff(1:nrow(df), train)
+    dfTrain <- df[train, ]
+    dfTest <- df[test, ]
+    
+    set.seed(123)
+    trCtrl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+    #print(trCtrl)
+    lmFit <- train(as.formula(paste(input$ycol,"~", input$xcol)), data = dfTrain, method = "lm",
+                   trControl = trCtrl)
+    
+  
+    predict <- predict(lmFit, newdata = data.frame(dfTest))
+    
+    list(lmFit = lmFit, predict = predict, dfTest = dfTest)
+    
+    
+ 
+    }
+  })
+
+  
+ #Regression Plot
+  output$regressionPlot <- renderPlotly(
+    if(input$regEqu == TRUE){
+      
+
       x <- list(
         title = paste(input$xcol, "Concentration ug/m^3")
       )
       y <- list(
         title = paste(input$ycol, "Concentration ug/m^3")
       )
-      plot_ly(x = x(), y = y(), type = 'scatter', mode = 'markers', name = "Concentration") %>% add_lines(x = x(), y = predict, name = "Regression Line") %>% layout(xaxis = x, yaxis = y, 
+      
+      model <-  (coef(regression()$lmFit$finalModel)[2] * x()) + coef(regression()$lmFit$finalModel)[1]
+      plot_ly() %>% add_trace(x = x(), y = y(), type = 'scatter', mode = 'markers', name = "Concentration") %>% add_lines(x = x(), y = model, name = "Regression Line") %>% layout(xaxis = x, yaxis = y, 
                                                                                                                                                                      title = paste("Simple Linear Regression:", 
-                                                                                                                                                                                   "X =", input$xcol,
-                                                                                                                                                                                   " , Y = ", input$ycol))
+                                                                                                                                                                                "X =", input$xcol,
+                                                                                                                                                                              " , Y = ", input$ycol),showlegend = F)
     }
     else{
       x <- list(
@@ -170,7 +203,7 @@ shinyServer(function(input, output, session) {
   output$regressionEqu <- renderPrint({
     
     if(input$regEqu == TRUE){
-    fit <- lm(y() ~ x())
+    fit <- summary(regression()$lmFit)
     fit
     }
   })
@@ -178,7 +211,7 @@ shinyServer(function(input, output, session) {
   output$regTable <- DT::renderDataTable({
     
     if(input$regEqu == TRUE){
-      data <- data.frame(x = x(), y = y(), yPredict = predict(lm(y() ~ x()), newdata = data.frame(x())))
+      data <- data.frame(regression()$dfTest[input$xcol], regression()$dfTest[input$ycol], ypredict = regression()$predict)
       data
     }
       
