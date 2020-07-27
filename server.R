@@ -5,7 +5,6 @@ library(randomForest)
 library(caret)
 library(e1071)
 
-
 source("global.R")
 
 #Server function
@@ -13,7 +12,14 @@ shinyServer(function(input, output, session) {
   #source("S:/ST558/Homeworks/Project 3/ST558Project3/source.R", local = TRUE)
   #Filtered data for Data Tab
   filterData <- reactive({
-      filterData <- loadData() %>% filterStationYear(input$station, input$year) %>% filter(month == input$month) %>% filter(day == input$day)
+    if(input$Alldata == TRUE){
+      filterData <- loadData()
+    }
+    
+    else{
+      filterData <- loadData() %>% filterStationYear(input$station, input$year) %>% filter(month == input$month)
+    }
+      
   })
   
   #Data for data exploration graphs
@@ -113,19 +119,19 @@ shinyServer(function(input, output, session) {
   #x variable for regression
   x <- reactive({
     #df <- Dingling_reg() %>% filter(month == input$month)
-    df <- filterDataExplore() %>% filterStationYear(input$stationReg, input$yearReg) %>% filter(month == input$month)
+    df <- filterDataExplore() %>% filterStationYear(input$stationReg, input$yearReg) %>% filter(month == input$monthReg)
     df <- as.numeric(unlist(df[input$xcol]))
     
   })
   
   #y variable for regression
   y <- reactive({
-    df <- filterDataExplore() %>% filterStationYear(input$stationReg, input$yearReg) %>% filter(month == input$month)
+    df <- filterDataExplore() %>% filterStationYear(input$stationReg, input$yearReg) %>% filter(month == input$monthReg)
     df <- as.numeric(unlist(df[input$ycol]))
   })
   
   #Change month in slider
-  observe({updateSliderInput(session, "month", value = input$month)})
+  observe({updateSliderInput(session, "month", value = input$monthReg)})
   
 #Regression Plot
   output$regression <- renderPlotly(
@@ -173,7 +179,7 @@ shinyServer(function(input, output, session) {
     
     if(input$regEqu == TRUE){
       data <- data.frame(x = x(), y = y(), yPredict = predict(lm(y() ~ x()), newdata = data.frame(x())))
-      head(data, n = 20)
+      data
     }
       
   })
@@ -255,7 +261,6 @@ shinyServer(function(input, output, session) {
   #random forest button
   rfModelEvent <- eventReactive(input$rfButton,{
     RandForest()
-    
   })
   
   #Print Random Forest output
@@ -302,6 +307,41 @@ shinyServer(function(input, output, session) {
         tbl_df(data.frame(rfPred, rfModelEvent()$dfTest))
       }
     }
+  }, caption = "Random Forest Prediction and Test Data", caption.placement = "top" )
+  
+  
+  #### Principal Component Analysis
+  
+  PC <- reactive({
+
   })
+  
+  analysisPC <- reactive({
+    data <- filterDataExplore() %>% filterStationYear(input$stationPC, input$yearPC) %>% filter(month == input$monthPC) %>% na.omit()
+    data <- dplyr::select(data, vars)
+    prcomp(data, center = TRUE, scale = TRUE)
+  })
+  
+  #PC output
+  output$outputPC <- renderPrint({
+    eventPC()
+  })
+  
+  #PC button
+  eventPC <- eventReactive(input$PCbutton,{
+      analysisPC()
+  })
+  
+  #PC biplot
+  output$biplot <- renderPlot({
+    biplot(eventPC(), choices = input$xPC:input$yPC)
+  })
+
+  
+  #scree plot
+  output$screeplot <- renderPlot({
+    screeplot(eventPC(), type = "lines")
+  })
+
   
 })

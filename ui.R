@@ -18,8 +18,7 @@ shinyUI(fluidPage(
                                                               choices = levels(as.factor(loadData()$year))),
                                     selectInput("month", "Select a month", selected = '3', 
                                                 choices = levels(as.factor(loadData()$month))),
-                                    selectInput("day", "Select a day", selected = '1',
-                                                choices = levels(as.factor(loadData()$day)))
+                                    checkboxInput("Alldata", h6("Show all data"), FALSE)
                                ),
                                mainPanel(
                                  DT::dataTableOutput("table"), downloadButton("download1","Download as csv"))
@@ -70,7 +69,29 @@ shinyUI(fluidPage(
                                  )
                                )
                             ),
-                              tabPanel("Principal Component Analysis"),
+                              tabPanel("Principal Component Analysis", fluid = TRUE,
+                                       sidebarLayout(
+                                           sidebarPanel(
+                                               headerPanel("Choose a dataset"),
+                                               selectInput("stationPC", "Select a city", selected = 'Aotizhongxin', 
+                                                           choices = levels(as.factor(loadData()$station))),
+                                               selectInput("yearPC", "Select a year", selected = "2013", 
+                                                           choices = levels(as.factor(loadData()$year))),
+                                               selectInput("monthPC", "Select a month", selected = '3', 
+                                                           choices = levels(as.factor(loadData()$month))),
+                                               h3("Select Principal Components"),
+                                               selectInput("xPC", "Select PC for x-axis", choices = seq(1:10), selected = 1),
+                                               selectInput("yPC", "Select PC for yaxis", choices = seq(1:10), selected = 2),
+                                               actionButton('PCbutton', label = 'Run Model'),
+                                               plotOutput("biplot")
+                                           ),
+                                           mainPanel(
+                                               verbatimTextOutput("outputPC"),
+                                               plotOutput("screeplot")
+                                               
+                                           )
+                                       )
+                            ),
                    navbarMenu("Supervised Learning Models", 
                               tabPanel("Regression", fluid = TRUE,
                                        sidebarLayout(
@@ -81,10 +102,10 @@ shinyUI(fluidPage(
                                            selectInput("yearReg", "Select a year", selected = "2013", 
                                                        choices = levels(as.factor(loadData()$year))),
                                            selectInput("xcol", "Predictor Variable (x)", selected = "PM2.5",
-                                                       choices = vars),
+                                                       choices = pols),
                                            selectInput("ycol", "Response Variable", selected = "O3",
                                                        choices = pols),
-                                           sliderInput("month", label = "Month", value = 6, min = 3,
+                                           sliderInput("monthReg", label = "Month", value = 6, min = 1,
                                                        max = 12),
                                            checkboxInput("regEqu", h4("Fit Regression Equation?"), FALSE)
                                          ),

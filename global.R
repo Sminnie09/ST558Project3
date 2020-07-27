@@ -17,13 +17,7 @@ pols <- names(loadData()[5:10])
 vars <- names(loadData()[5:14])
 
 
-#Load one file for modeling
 
-Dingling_reg <- function(){
-  data <- read_csv("S:/ST558/Homeworks/Project 3/ST558Project3/PRSA_Data_Dingling_20130301-20170228.csv")
-  data <- data %>% filter(year == "2016")
-  return(data[-1])
-}
 
 
 #Filter data for station
