@@ -88,13 +88,14 @@ shinyUI(fluidPage(
                                            plotlyOutput("regression"),
                                            
                                            verbatimTextOutput("regressionEqu"),
-                                           tableOutput("regTable")
+                                           DT::dataTableOutput("regTable")
                                          ),
                                        ),
                               ),
                               tabPanel("Random Forest Model", fluid = TRUE,
                                        sidebarLayout(
                                          sidebarPanel(
+                                           h2("Random Forest Model"),
                                            h3("Choose a Dataset"),
                                            selectInput("stationRF", "Select a city", selected = 'Aotizhongxin', 
                                                        choices = levels(as.factor(loadData()$station))),
@@ -111,7 +112,8 @@ shinyUI(fluidPage(
                                            conditionalPanel(condition = "input.predvars == 'select'",
                                                             selectInput("vars2", "Select the predictor variables:", choices = vars, selected = NULL, multiple=TRUE)          
                                            ),
-                                           actionButton('rfButton', label = 'Run Model')
+                                           actionButton('rfButton', label = 'Run Model'),
+                                           plotOutput("varImpPlot")
                                           
                                            
                                            
@@ -119,7 +121,8 @@ shinyUI(fluidPage(
                                          ),
                                          mainPanel(
                                            verbatimTextOutput("rfOutput"),
-                                           plotOutput("varImpPlot")
+                                           tableOutput("rfPred")
+                                           
                                          )
                                        )
                               )

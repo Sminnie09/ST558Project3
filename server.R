@@ -178,10 +178,10 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  output$regTable <- renderTable({
+  output$regTable <- DT::renderDataTable({
     
     if(input$regEqu == TRUE){
-      data <- data.frame(x = x(), yPredict = predict(lm(y() ~ x()), newdata = data.frame(x())))
+      data <- data.frame(x = x(), y = y(), yPredict = predict(lm(y() ~ x()), newdata = data.frame(x())))
       head(data, n = 20)
     }
       
@@ -256,7 +256,7 @@ shinyServer(function(input, output, session) {
       
       #rf output
       impt <- varImp(rfFit, scale = FALSE)
-      list(result = rfFit, importance = impt)
+      list(result = rfFit, importance = impt, dfTest = dfTest)
   })
 
   
@@ -269,7 +269,7 @@ shinyServer(function(input, output, session) {
   
   #Print Random Forest output
   output$rfOutput <- renderPrint({
-    rfModelEvent()
+    rfModelEvent()[1:2]
     
   })
   
@@ -278,7 +278,6 @@ shinyServer(function(input, output, session) {
     if (input$predvars == "all") {
       
       rfImp <- rfModelEvent()$importance
-      #print(rfFit)
       plot(rfImp)
     }
     
@@ -290,6 +289,26 @@ shinyServer(function(input, output, session) {
       else{
         rfImp <- rfModelEvent()$importance
         plot(rfImp)
+      }
+    }
+  })
+  
+  #Table of predictions
+  output$rfPred <- renderTable({
+    if (input$predvars == "all") {
+      
+      rfPred <- predict(rfModelEvent()$result, newdata = rfModelEvent()$dfTest)
+      tbl_df(data.frame(rfPred, rfModelEvent()$dfTest))
+    }
+    
+    else{
+      if((is.null(input$vars2) == TRUE)){
+        print("Please select the predictor variables.")
+      }
+      
+      else{
+        rfPred <- predict(rfModelEvent()$result, newdata = rfModelEvent()$dfTest)
+        tbl_df(data.frame(rfPred, rfModelEvent()$dfTest))
       }
     }
   })
