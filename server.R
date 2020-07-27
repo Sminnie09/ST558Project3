@@ -194,7 +194,7 @@ shinyServer(function(input, output, session) {
   RandForest <- reactive({
     
       set.seed(123)
-      df <- filterDataExplore() %>% filterStationYear(input$stationRF, input$yearRF) %>% na.omit()
+      df <- filterDataExplore() %>% filterStationYear(input$stationRF, input$yearRF) %>% filter(month == input$monthRF) %>% filter(day == input$dayRF) %>% na.omit()
       #df$class <- ifelse(df[input$vars1] <= 400, "low", "high")
       #df$class <- factor(df$class)
       df <- df[c(5:14)]
@@ -226,27 +226,34 @@ shinyServer(function(input, output, session) {
                      trControl = trCtrl, preProcess = c("center", "scale"), imp = TRUE)
     }else{
       
-      if(is.null(input$vars2) == TRUE
-        #Status Bar
-        progress <- Progress$new(session, min=1, max=15)
-        on.exit(progress$close())
-        
-        progress$set(message = 'Calculation in progress',
-                     detail = 'This may take a while...')
-        
-        for (i in 1:15) {
-          progress$set(value = i)
-          Sys.sleep(0.5)
-        }
-        
-        #Create train/test datsets
-        #repeated cross validation
-        set.seed(123)
-        trCtrl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
-        #print(trCtrl)
-        rfFit <- train(as.formula(paste(input$vars1,"~.")), data = dfTrain, method = "rf",
-                       trControl = trCtrl, preProcess = c("center", "scale"), imp = TRUE)
+      if(is.null(input$vars2) == TRUE){
+        print("Please select the predictor variables.")
       }
+        
+        else{
+          #Status Bar
+          progress <- Progress$new(session, min=1, max=15)
+          on.exit(progress$close())
+          
+          progress$set(message = 'Calculation in progress',
+                       detail = 'This may take a while...')
+          
+          for (i in 1:15) {
+            progress$set(value = i)
+            Sys.sleep(0.5)
+          }
+          
+          #Create train/test datsets
+          #repeated cross validation
+          set.seed(123)
+          trCtrl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+          #print(trCtrl)
+          rfFit <- train(as.formula(paste(input$vars1," ~ ",paste(input$vars2,collapse="+"))), data = dfTrain, method = "rf",
+                         trControl = trCtrl, preProcess = c("center", "scale"), imp = TRUE)
+        }
+
+    }
+      
       #rf output
       impt <- varImp(rfFit, scale = FALSE)
       list(result = rfFit, importance = impt)
@@ -274,20 +281,17 @@ shinyServer(function(input, output, session) {
       #print(rfFit)
       plot(rfImp)
     }
-
-  })
-  
-  
-  
-
-  
-  
-  #update action button for random forest model
-  
-
-  
-  
-
     
+    else{
+      if((is.null(input$vars2) == TRUE)){
+        print("Please select the predictor variables.")
+      }
+      
+      else{
+        rfImp <- rfModelEvent()$importance
+        plot(rfImp)
+      }
+    }
+  })
   
 })
