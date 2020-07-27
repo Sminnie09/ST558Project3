@@ -13,16 +13,7 @@ shinyServer(function(input, output, session) {
   #source("S:/ST558/Homeworks/Project 3/ST558Project3/source.R", local = TRUE)
   #Filtered data for Data Tab
   filterData <- reactive({
-    
-    if(input$station == 'Select a city'){
-      filterData <- loadData()
-    }
-    else if(input$station != 'Select a city' & input$year == 'Select a year'){
-      filterData <- loadData() %>% filter(station == input$station)
-    }
-    else if(input$station != 'Select a city' & input$year != 'Select a year'){
-      filterData <- loadData() %>% filterStationYear(input$station, input$year)
-    }
+      filterData <- loadData() %>% filterStationYear(input$station, input$year) %>% filter(month == input$month) %>% filter(day == input$day)
   })
   
   #Data for data exploration graphs

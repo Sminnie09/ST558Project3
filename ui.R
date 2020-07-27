@@ -14,8 +14,12 @@ shinyUI(fluidPage(
                                     h3("View Datasets"),
                                     selectInput("station", "Select a city", selected = 'Aotizhongxin', 
                                                               choices = levels(as.factor(loadData()$station))),
-                                                  selectInput("year", "Select a year", selected = "2013", 
-                                                              choices = levels(as.factor(loadData()$year)))
+                                    selectInput("year", "Select a year", selected = "2013", 
+                                                              choices = levels(as.factor(loadData()$year))),
+                                    selectInput("month", "Select a month", selected = '3', 
+                                                choices = levels(as.factor(loadData()$month))),
+                                    selectInput("day", "Select a day", selected = '1',
+                                                choices = levels(as.factor(loadData()$day)))
                                ),
                                mainPanel(
                                  DT::dataTableOutput("table"), downloadButton("download1","Download as csv"))
