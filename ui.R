@@ -76,7 +76,7 @@ shinyUI(fluidPage(
                                  )
                              )
                     ),
-                    tabPanel("Data", fluid = TRUE, value = "test",
+                    tabPanel("Data", fluid = TRUE,
                              sidebarLayout(
                                sidebarPanel(
                                     h3("View Datasets"),
