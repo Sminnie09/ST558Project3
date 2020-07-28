@@ -17,9 +17,6 @@ pols <- names(loadData()[5:10])
 vars <- names(loadData()[5:14])
 
 
-
-
-
 #Filter data for station
 filterStation <- function(data, city){
     Station <- data %>% filter(station == city)

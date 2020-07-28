@@ -183,7 +183,6 @@ shinyServer(function(input, output, session) {
     )
   })
   
-
   #Observe checkbox for regression equation
   observeEvent(input$regEqu,{
   })
