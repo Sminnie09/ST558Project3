@@ -5,11 +5,12 @@ library(randomForest)
 library(caret)
 library(e1071)
 
+#Global source file
 source("global.R")
 
 #Server function
 shinyServer(function(input, output, session) {
-  #source("S:/ST558/Homeworks/Project 3/ST558Project3/source.R", local = TRUE)
+
   #Filtered data for Data Tab
   filterData <- reactive({
     if(input$Alldata == TRUE){
@@ -28,9 +29,10 @@ shinyServer(function(input, output, session) {
   })
   
 
-  #Save data in data table
+  #Data table for data tab
   output$table <- DT::renderDataTable(filterData())
 
+  #function to download the data table in the data tab
   output$download1 <- downloadHandler(
     filename = function() {
       paste("data-", Sys.Date(), ".csv", sep="")
@@ -41,11 +43,12 @@ shinyServer(function(input, output, session) {
   )
   
 
-  #Data Exploration - Graphical
+  ### Data Exploration tab - Graphical Summaries
   output$plot <- renderPlot({
 
-      df <- filterDataExplore() %>% filterStationYear(input$stationPlot, input$yearPlot)
- 
+      df <- filterDataExplore() %>% filterStationYear(input$stationPlot, input$yearPlot) #filter data
+    
+      #Histogram
     if(input$plot == "Histogram"){
       #ggplot(df, mapping = aes(x=input$pollutant)) + geom_histogram()
       #print(input$pollutant)
@@ -53,6 +56,7 @@ shinyServer(function(input, output, session) {
       hist(dfPol, breaks = input$bins, xlab = input$pollutant, main = paste("Histogram of", input$stationPlot, input$pollutant, "Concentrations in", input$yearPlot))
     }
     
+      #Boxplot
     if(input$plot == "Boxplot"){
       df <- df[5:10]
       #print(df)
@@ -67,24 +71,24 @@ shinyServer(function(input, output, session) {
   })
   
   
-  #Data Exploration - Numerical
+  ####Data Exploration tab - Numerical Summaries
   output$numSummary <- renderPrint({
       data <- filterDataExplore() %>% filterStationYear(input$stationSum, input$yearSum)
       summary(data[c(5:14)])
   })
   
   
-  #Data Exploration - Change number of obs shown
+  #Data Exploration tab - Change number of obs shown in data table
   observe({updateNumericInput(session, "obs", value = input$obs)})
   
-  #Data exploration table of obs
+  #Data exploration -  table of obs
   output$view <- renderTable({
     dataTable <- filterDataExplore() %>% filterStationYear(input$stationSum, input$yearSum)
     head(dataTable, n = input$obs)
   })
   
 
-  #Save histogram
+  #Save histogram as png file
   output$downloadHist <- downloadHandler(
 
         file = paste("Histogram", '.png', sep=''),
@@ -96,7 +100,7 @@ shinyServer(function(input, output, session) {
       }
     )
   
-#### Regression  
+#### Regression Model
 
   #x variable for regression
   x <- reactive({
@@ -112,7 +116,7 @@ shinyServer(function(input, output, session) {
     df <- as.numeric(unlist(df[input$ycol]))
   })
   
-  #Change month in slider
+  #Change month in slider for regression
   observe({updateSliderInput(session, "month", value = input$monthReg)})
   
   
@@ -140,13 +144,11 @@ shinyServer(function(input, output, session) {
     
     list(lmFit = lmFit, predict = predict, dfTest = dfTest)
     
-    
- 
     }
   })
 
   
- #Regression Plot
+ #Regression Plot - add regression line to scatter plot
   output$regressionPlot <- renderPlotly(
     if(input$regEqu == TRUE){
       
@@ -158,12 +160,14 @@ shinyServer(function(input, output, session) {
         title = paste(input$ycol, "Concentration ug/m^3")
       )
       
+      #Regression plot
       model <-  (coef(regression()$lmFit$finalModel)[2] * x()) + coef(regression()$lmFit$finalModel)[1]
       plot_ly() %>% add_trace(x = x(), y = y(), type = 'scatter', mode = 'markers', name = "Concentration") %>% add_lines(x = x(), y = model, name = "Regression Line") %>% layout(xaxis = x, yaxis = y, 
                                                                                                                                                                      title = paste("Simple Linear Regression:", 
                                                                                                                                                                                 "X =", input$xcol,
                                                                                                                                                                               " , Y = ", input$ycol),showlegend = F)
     }
+    #Scatter plot
     else{
       x <- list(
         title = paste(input$xcol, "Concentration ug/m^3")
@@ -187,7 +191,7 @@ shinyServer(function(input, output, session) {
   observeEvent(input$regEqu,{
   })
   
-  #Regression equation
+  #Regression equation results 
   output$regressionEqu <- renderPrint({
     
     if(input$regEqu == TRUE){
@@ -196,6 +200,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  #regression data table
   output$regTable <- DT::renderDataTable({
     
     if(input$regEqu == TRUE){
@@ -208,7 +213,7 @@ shinyServer(function(input, output, session) {
   
   #### Random Forest Model
   
-
+  #reactive variable for random forest model
   RandForest <- reactive({
     
       set.seed(123)
@@ -222,7 +227,9 @@ shinyServer(function(input, output, session) {
       dfTrain <- df[train, ]
       dfTest <- df[test, ]
     
+      #all variables as predictors
     if(input$predvars == "all"){
+      
       #Status Bar
       progress <- Progress$new(session, min=1, max=15)
       on.exit(progress$close())
@@ -265,21 +272,20 @@ shinyServer(function(input, output, session) {
           #repeated cross validation
           set.seed(123)
           trCtrl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
-          #print(trCtrl)
           rfFit <- train(as.formula(paste(input$vars1," ~ ",paste(input$vars2,collapse="+"))), data = dfTrain, method = "rf",
                          trControl = trCtrl, preProcess = c("center", "scale"), imp = TRUE)
         }
 
     }
       
-      #rf output
+      #random forest output
       impt <- varImp(rfFit, scale = FALSE)
       list(result = rfFit, importance = impt, dfTest = dfTest)
   })
 
   
   
-  #random forest button
+  #random forest button to run model
   rfModelEvent <- eventReactive(input$rfButton,{
     RandForest()
   })
@@ -290,7 +296,7 @@ shinyServer(function(input, output, session) {
     
   })
   
-  
+  #variable importance plot from random forest model
   output$varImpPlot <- renderPlot({
     if (input$predvars == "all") {
       
@@ -310,7 +316,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  #Table of predictions
+  #Table of predictions from random forest model
   output$rfPred <- renderTable({
     if (input$predvars == "all") {
       
@@ -337,6 +343,7 @@ shinyServer(function(input, output, session) {
 
   })
   
+  #reactive variable for principal component analysis
   analysisPC <- reactive({
     data <- filterDataExplore() %>% filterStationYear(input$stationPC, input$yearPC) %>% filter(month == input$monthPC) %>% na.omit()
     data <- dplyr::select(data, vars)

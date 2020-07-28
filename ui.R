@@ -207,10 +207,6 @@ shinyUI(fluidPage(
                                            ),
                                            actionButton('rfButton', label = 'Run Model'),
                                            plotOutput("varImpPlot")
-                                          
-                                           
-                                           
-                                           
                                          ),
                                          mainPanel(
                                            verbatimTextOutput("rfOutput"),
